@@ -8,31 +8,13 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/mynameisfzf/gentool/core"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v3"
 )
-
-type ProtoConfig struct {
-	DbType        string   `yaml:"dbType"`
-	Host          string   `yaml:"host"`
-	Port          int      `yaml:"port"`
-	User          string   `yaml:"user"`
-	Password      string   `yaml:"password"`
-	Schema        string   `yaml:"schema"`
-	Tables        []string `yaml:"tables"`
-	ServiceName   string   `yaml:"serviceName"`
-	PackageName   string   `yaml:"packageName"`
-	GoPackageName string   `yaml:"goPackageName"`
-	OutFile       string   `yaml:"outFile"`
-	IgnoreTables  []string `yaml:"ignoreTables"`
-	IgnoreColumns []string `yaml:"ignoreColumns"`
-}
 
 // protoCmd represents the proto command
 var protoCmd = &cobra.Command{
@@ -58,8 +40,8 @@ func generateProto() {
 		fmt.Println("未知配置文件")
 		return
 	}
-
-	cc, err := loadConfig(Cfg)
+	var cc ProtoConfig
+	err := loadConfig(Cfg, &cc)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,20 +71,6 @@ func generateProto() {
 		writeFile(cc.OutFile, s.String())
 	}
 
-}
-
-func loadConfig(path string) (*ProtoConfig, error) {
-	var c ProtoConfig
-	yamlFile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		return nil, err
-	}
-	return &c, nil
 }
 
 func writeFile(filePath, content string) (bool, error) {

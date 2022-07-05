@@ -1,13 +1,14 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"gorm.io/driver/mysql"
+	"gorm.io/gen"
+	"gorm.io/gorm"
 )
 
 // gormCmd represents the gorm command
@@ -21,20 +22,52 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gorm called")
+		var cc GenConfig
+
+		err := loadConfig(Cfg, &cc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cc.User, cc.Password, cc.Host, cc.Port, cc.Schema)
+		db, err := sql.Open(cc.DbType, connStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer db.Close()
+		generateGorm(db, &cc)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(gormCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func generateGorm(db *sql.DB, c *GenConfig) {
+	g := gen.NewGenerator(gen.Config{
+		OutPath:           c.OutPath,
+		OutFile:           c.OutFile,
+		ModelPkgPath:      c.ModelPkgName,
+		WithUnitTest:      c.WithUnitTest,
+		FieldNullable:     c.FieldNullable,
+		FieldWithIndexTag: c.FieldWithIndexTag,
+		FieldWithTypeTag:  c.FieldWithTypeTag,
+	})
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// gormCmd.PersistentFlags().String("foo", "", "A help for foo")
+	gdb, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: db,
+	}))
+	if nil != err {
+		log.Fatal(err)
+	}
+	g.UseDB(gdb)
+	models := make([]interface{}, len(c.Tables))
+	for i, table := range c.Tables {
+		models[i] = g.GenerateModel(table)
+	}
+	if !c.OnlyModel {
+		g.ApplyBasic(models...)
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// gormCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	g.Execute()
 }
