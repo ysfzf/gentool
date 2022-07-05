@@ -1,15 +1,15 @@
 #### Give a star before you see it. Ha ha ha ~ ~
 
-Generates a protobuf file from your mysql database.
+Generates a protobuf file from your mysql database,May also generates gorm files from your database.
 
-### Uses
+### protobuf
  
  ```
- sql2pb  ./config.yaml >test.proto
+ gentool proto --config config.yaml  
 
  ```
 
-### yaml
+ config.yaml
 
 ```yaml
 dbType: mysql   
@@ -19,9 +19,10 @@ user: root
 password: 123456
 schema: ff
 tables: 
-serviceName: merchant
-packageName: merchant
-goPackageName: ./merchant
+  - users
+serviceName: user
+packageName: user
+goPackageName: ./user
 ignoreTables:  
   - user_logs
 ignoreColumns: 
@@ -33,5 +34,35 @@ ignoreColumns:
 
 ```
 
-#### Thanks for schemabuf
-    schemabuf : https://github.com/mcos/schemabuf
+### gorm 
+
+```
+ gentool gorm --config config.yaml 
+```
+
+config.yaml
+
+```yaml
+dbType: mysql
+host: localhost
+port: 3306
+user: root
+password: 123456
+schema: fcar
+tables: 
+  - users
+  - merchant_users
+onlyModel: false
+outPath: ./query/model
+outFile:
+withUnitTest: false
+modelPkgName: model
+fieldNullable: false
+fieldWithIndexTag: false
+fieldWithTypeTag: false
+
+```
+
+#### Thanks 
+    go-gorm : https://github.com/go-gorm/gen
+    Mikaelemmmm : https://github.com/zeromicro/go-zero

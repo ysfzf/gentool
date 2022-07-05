@@ -14,13 +14,11 @@ import (
 // gormCmd represents the gorm command
 var gormCmd = &cobra.Command{
 	Use:   "gorm",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate gorm model file from database",
+	Long: `This command generates a Gorm related file, which supports MySQL or Postgres or SQLite or sqlserver. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	gentool gorm --config xx.yaml
+ `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var cc GenConfig
 

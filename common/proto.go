@@ -1,4 +1,4 @@
-package core
+package common
 
 import (
 	"bytes"
@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/mynameisfzf/gentool/tools/stringx"
 
 	"github.com/chuckpreslar/inflect"
 	"github.com/serenize/snaker"
@@ -145,7 +143,7 @@ func dbColumns(db *sql.DB, schema, table string) ([]Column, error) {
 		}
 
 		if cs.TableComment == "" {
-			cs.TableComment = stringx.From(cs.TableName).ToCamelWithStartLower()
+			cs.TableComment = From(cs.TableName).ToCamelWithStartLower()
 		}
 
 		cols = append(cols, cs)
@@ -378,7 +376,7 @@ func (m Message) GenDefaultMessage(buf *bytes.Buffer) {
 		}
 		filedTag++
 		field.tag = filedTag
-		field.Name = stringx.From(field.Name).ToCamelWithStartLower()
+		field.Name = From(field.Name).ToCamelWithStartLower()
 		if field.Comment == "" {
 			field.Comment = field.Name
 		}
@@ -407,7 +405,7 @@ func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer) {
 		}
 		filedTag++
 		field.tag = filedTag
-		field.Name = stringx.From(field.Name).ToCamelWithStartLower()
+		field.Name = From(field.Name).ToCamelWithStartLower()
 		if field.Comment == "" {
 			field.Comment = field.Name
 		}
@@ -445,7 +443,7 @@ func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer) {
 		}
 		filedTag++
 		field.tag = filedTag
-		field.Name = stringx.From(field.Name).ToCamelWithStartLower()
+		field.Name = From(field.Name).ToCamelWithStartLower()
 		if field.Comment == "" {
 			field.Comment = field.Name
 		}
@@ -512,7 +510,7 @@ func (m Message) GenRpcGetByIdReqMessage(buf *bytes.Buffer) {
 	firstWord := strings.ToLower(string(m.Name[0]))
 	m.Name = "Get" + mOrginName + "ByIdResp"
 	m.Fields = []MessageField{
-		{Typ: mOrginName, Name: stringx.From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: stringx.From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
+		{Typ: mOrginName, Name: From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
 	}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 
@@ -538,7 +536,7 @@ func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer) {
 		}
 		filedTag++
 		field.tag = filedTag
-		field.Name = stringx.From(field.Name).ToCamelWithStartLower()
+		field.Name = From(field.Name).ToCamelWithStartLower()
 		if field.Comment == "" {
 			field.Comment = field.Name
 		}
@@ -555,7 +553,7 @@ func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer) {
 	firstWord := strings.ToLower(string(m.Name[0]))
 	m.Name = "Search" + mOrginName + "Resp"
 	m.Fields = []MessageField{
-		{Typ: "repeated " + mOrginName, Name: stringx.From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: stringx.From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
+		{Typ: "repeated " + mOrginName, Name: From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
 	}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 

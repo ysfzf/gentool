@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -12,20 +8,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mynameisfzf/gentool/core"
+	"github.com/mynameisfzf/gentool/common"
 	"github.com/spf13/cobra"
 )
 
-// protoCmd represents the proto command
 var protoCmd = &cobra.Command{
 	Use:   "proto",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate protobuf file from database",
+	Long: `This command generates a proto file for use in the gozero project. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	gentool proto --config xxx.yaml
+ `,
 	Run: func(cmd *cobra.Command, args []string) {
 		generateProto()
 	},
@@ -60,14 +53,14 @@ func generateProto() {
 	defer db.Close()
 
 	table := strings.Join(cc.Tables, ",")
-	s, err := core.GenerateSchema(db, table, cc.IgnoreTables, cc.IgnoreColumns, cc.ServiceName, cc.GoPackageName, cc.PackageName)
+	s, err := common.GenerateSchema(db, table, cc.IgnoreTables, cc.IgnoreColumns, cc.ServiceName, cc.GoPackageName, cc.PackageName)
 
 	if nil != err {
 		log.Fatal(err)
 	}
 
 	if nil != s {
-		//fmt.Println(s)
+
 		writeFile(cc.OutFile, s.String())
 	}
 
@@ -79,8 +72,8 @@ func writeFile(filePath, content string) (bool, error) {
 		return false, err
 	}
 	defer file.Close()
-	writer := bufio.NewWriter(file) //创建一个writer,带缓存
-	writer.WriteString(content)     //写入
+	writer := bufio.NewWriter(file)
+	writer.WriteString(content)
 	writer.Flush()
 	return true, nil
 }

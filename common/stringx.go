@@ -1,4 +1,4 @@
-package stringx
+package common
 
 import (
 	"bytes"
@@ -76,9 +76,9 @@ func (s String) ToCamelWithStartLower() string {
 	}, true)
 	var target []string
 	for i, item := range list {
-		if i !=0{
+		if i != 0 {
 			target = append(target, From(item).Title())
-		}else{
+		} else {
 			target = append(target, item)
 		}
 
