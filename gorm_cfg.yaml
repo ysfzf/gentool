@@ -1,0 +1,17 @@
+dbType: mysql
+host: localhost
+port: 3306
+user: root
+password: 123456
+schema: ff
+tables: 
+  - users
+  - merchant_users
+onlyModel: false
+outPath: ./query/model
+outFile:
+withUnitTest: false
+modelPkgName: model
+fieldNullable: false
+fieldWithIndexTag: false
+fieldWithTypeTag: false
