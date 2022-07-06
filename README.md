@@ -53,7 +53,7 @@ tables:
   - users
   - merchant_users
 onlyModel: false
-outPath: ./query/model
+outPath: ./dao/query  #Cannot end with "model"
 outFile:
 withUnitTest: false
 modelPkgName: model
