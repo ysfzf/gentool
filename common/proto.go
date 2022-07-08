@@ -488,9 +488,7 @@ func (m Message) GenRpcDelReqMessage(buf *bytes.Buffer) {
 
 	//resp
 	m.Name = "Del" + mOrginName + "Resp"
-	m.Fields = []MessageField{
-		{Typ: "bool", Name: "state", tag: 1, Comment: "state"},
-	}
+	m.Fields = []MessageField{}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 
 	//reset
