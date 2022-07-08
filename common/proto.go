@@ -42,10 +42,10 @@ func GenerateSchema(db *sql.DB, table string, ignoreTables, ignoreColumns []stri
 
 	s.Syntax = proto3
 	s.ServiceName = serviceName
-	if "" != pkg {
+	if pkg != "" {
 		s.Package = pkg
 	}
-	if "" != goPkg {
+	if goPkg != "" {
 		s.GoPackage = goPkg
 	} else {
 		s.GoPackage = "./" + s.Package
@@ -127,11 +127,10 @@ func dbColumns(db *sql.DB, schema, table string) ([]Column, error) {
 	q += " ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION"
 
 	rows, err := db.Query(q, schema)
-	defer rows.Close()
 	if nil != err {
 		return nil, err
 	}
-
+	defer rows.Close()
 	cols := []Column{}
 
 	for rows.Next() {
@@ -371,7 +370,7 @@ func (m Message) GenDefaultMessage(buf *bytes.Buffer) {
 	curFields := []MessageField{}
 	var filedTag int
 	for _, field := range m.Fields {
-		if isInSlice([]string{"version", "del_state", "delete_time"}, field.Name) {
+		if isInSlice(except, field.Name) && field.Name != "id" {
 			continue
 		}
 		filedTag++
@@ -418,9 +417,12 @@ func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer) {
 	m.Name = mOrginName
 	m.Fields = mOrginFields
 
+	firstWord := strings.ToLower(string(m.Name[0]))
 	//resp
 	m.Name = "Add" + mOrginName + "Resp"
-	m.Fields = []MessageField{}
+	m.Fields = []MessageField{
+		{Typ: mOrginName, Name: From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
+	}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 
 	//reset
@@ -438,7 +440,7 @@ func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer) {
 	curFields := []MessageField{}
 	var filedTag int
 	for _, field := range m.Fields {
-		if isInSlice(except, field.Name) {
+		if isInSlice(except, field.Name) && field.Name != "id" {
 			continue
 		}
 		filedTag++
@@ -456,9 +458,12 @@ func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer) {
 	m.Name = mOrginName
 	m.Fields = mOrginFields
 
+	firstWord := strings.ToLower(string(m.Name[0]))
 	//resp
 	m.Name = "Update" + mOrginName + "Resp"
-	m.Fields = []MessageField{}
+	m.Fields = []MessageField{
+		{Typ: mOrginName, Name: From(firstWord + mOrginName[1:]).ToCamelWithStartLower(), tag: 1, Comment: From(firstWord + mOrginName[1:]).ToCamelWithStartLower()},
+	}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 
 	//reset
@@ -483,7 +488,9 @@ func (m Message) GenRpcDelReqMessage(buf *bytes.Buffer) {
 
 	//resp
 	m.Name = "Del" + mOrginName + "Resp"
-	m.Fields = []MessageField{}
+	m.Fields = []MessageField{
+		{Typ: "bool", Name: "state", tag: 1, Comment: "state"},
+	}
 	buf.WriteString(fmt.Sprintf("%s\n", m))
 
 	//reset
@@ -531,7 +538,7 @@ func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer) {
 	}
 	var filedTag = len(curFields)
 	for _, field := range m.Fields {
-		if isInSlice([]string{"version", "del_state", "delete_time"}, field.Name) {
+		if isInSlice(except, field.Name) {
 			continue
 		}
 		filedTag++

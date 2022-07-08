@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+Copyright © 2022 fzf <ysfzf@hotmail>
 
 */
 package cmd
@@ -69,7 +69,7 @@ func Execute() {
 
 func init() {
 
-	rootCmd.PersistentFlags().StringVar(&Cfg, "config", "", "config file")
+	rootCmd.PersistentFlags().StringVarP(&Cfg, "config", "c", "", "config file")
 
 }
 
