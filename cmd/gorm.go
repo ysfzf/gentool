@@ -50,6 +50,8 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 		FieldNullable:     c.FieldNullable,
 		FieldWithIndexTag: c.FieldWithIndexTag,
 		FieldWithTypeTag:  c.FieldWithTypeTag,
+		FieldCoverable:    c.FieldCoverable,
+		// Mode:              gen.WithDefaultQuery,
 	})
 
 	gdb, err := gorm.Open(mysql.New(mysql.Config{
@@ -60,11 +62,13 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 	}
 	g.UseDB(gdb)
 	models := make([]interface{}, len(c.Tables))
+
 	for i, table := range c.Tables {
 		models[i] = g.GenerateModel(table)
 	}
 	if !c.OnlyModel {
 		g.ApplyBasic(models...)
+
 	}
 
 	g.Execute()

@@ -46,6 +46,8 @@ type GenConfig struct {
 	FieldNullable     bool     `yaml:"fieldNullable"`     // generate with pointer when field is nullable
 	FieldWithIndexTag bool     `yaml:"fieldWithIndexTag"` // generate field with gorm index tag
 	FieldWithTypeTag  bool     `yaml:"fieldWithTypeTag"`  // generate field with gorm column type tag
+	FieldCoverable    bool     `yaml:"fieldCoverable"`    //generate pointer when field has default value, to fix problem zero value cannot be assign: https://gorm.io/docs/create.html#Default-Values
+
 }
 
 // type Config interface{

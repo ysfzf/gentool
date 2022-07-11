@@ -3,15 +3,17 @@ host: localhost
 port: 3306
 user: root
 password: 123456
-schema: fcar
+schema: ff
 tables: 
   - users
   - merchant_users
 onlyModel: false
-outPath: ./query/model
+outPath: ./dao/query
 outFile:
 withUnitTest: false
 modelPkgName: model
-fieldNullable: false
+fieldNullable: true
 fieldWithIndexTag: false
-fieldWithTypeTag: false
+fieldWithTypeTag: true
+fieldCoverable: true
+ 
