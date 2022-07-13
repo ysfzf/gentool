@@ -51,7 +51,7 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 		FieldWithIndexTag: c.FieldWithIndexTag,
 		FieldWithTypeTag:  c.FieldWithTypeTag,
 		FieldCoverable:    c.FieldCoverable,
-		// Mode:              gen.WithDefaultQuery,
+		Mode:              gen.WithDefaultQuery | gen.WithQueryInterface,
 	})
 
 	gdb, err := gorm.Open(mysql.New(mysql.Config{
