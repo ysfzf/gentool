@@ -12,22 +12,23 @@ import (
 )
 
 type TabField struct {
-	Typ     string `json:"typ"`
-	Name    string `json:"name"`
-	Comment string `json:"comment"`
+	Typ     string
+	Name    string
+	Comment string
 }
 
 type Tab struct {
-	Name    string     `json:"name"`
-	Comment string     `json:"comment"`
-	Fields  []TabField `json:"fields"`
+	TableName string
+	Name      string
+	Comment   string
+	Fields    []TabField
 }
 
 type SchemaApi struct {
-	Syntax      string         `json:"syntax"`
-	ServiceName string         `json:"serivce"`
-	Tables      []Tab          `json:"tables"`
-	Enums       EnumCollection `json:"enums,omitempty"`
+	Syntax      string
+	ServiceName string
+	Tables      []Tab
+	Enums       EnumCollection
 }
 
 func GenerateApi(db *sql.DB, table string, ignoreTables, ignoreColumns []string, serviceName string) (*SchemaApi, error) {
@@ -62,7 +63,7 @@ func GenerateApi(db *sql.DB, table string, ignoreTables, ignoreColumns []string,
 
 		msg, ok := typMap[name]
 		if !ok {
-			typMap[name] = &Tab{Name: name, Comment: col.TableComment}
+			typMap[name] = &Tab{Name: name, Comment: col.TableComment, TableName: col.TableName}
 			msg = typMap[name]
 		}
 
@@ -187,19 +188,19 @@ func (s *SchemaApi) String() string {
 		buf.WriteString("\n")
 
 		buf.WriteString("   @handler Get" + tab.Name + "\n")
-		buf.WriteString(fmt.Sprintf("   get /%s (Get%sRequest) returns(Get%sResponse)\n\n", tab.Name, tab.Name, tab.Name))
+		buf.WriteString(fmt.Sprintf("   get /%s (Get%sRequest) returns(Get%sResponse)\n\n", tab.TableName, tab.Name, tab.Name))
 
 		buf.WriteString("   @handler Get" + tab.Name + "Info\n")
-		buf.WriteString(fmt.Sprintf("   get /%s/:id (IDRequest) returns(%sInfoResponse)\n\n", tab.Name, tab.Name))
+		buf.WriteString(fmt.Sprintf("   get /%s/:id (IDRequest) returns(%sInfoResponse)\n\n", tab.TableName, tab.Name))
 
 		buf.WriteString("   @handler Add" + tab.Name + "\n")
-		buf.WriteString(fmt.Sprintf("   post /%s (Add%sRequest) \n\n", tab.Name, tab.Name))
+		buf.WriteString(fmt.Sprintf("   post /%s (Add%sRequest) \n\n", tab.TableName, tab.Name))
 
 		buf.WriteString("   @handler Update" + tab.Name + "\n")
-		buf.WriteString(fmt.Sprintf("   put /%s/:id (Update%sRequest) \n\n", tab.Name, tab.Name))
+		buf.WriteString(fmt.Sprintf("   put /%s/:id (Update%sRequest) \n\n", tab.TableName, tab.Name))
 
 		buf.WriteString("   @handler Delete" + tab.Name + "\n")
-		buf.WriteString(fmt.Sprintf("   delete /%s/:id (IDRequest) \n\n", tab.Name))
+		buf.WriteString(fmt.Sprintf("   delete /%s/:id (IDRequest) \n\n", tab.TableName))
 	}
 	buf.WriteString("}\n\n")
 	return buf.String()
