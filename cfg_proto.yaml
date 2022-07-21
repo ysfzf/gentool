@@ -5,8 +5,8 @@ user: root
 password: 123456
 schema: ff
 tables: 
+  - shops
   - users
-  - merchant_users
 serviceName: merchant
 packageName: merchant
 goPackageName: ./merchant
