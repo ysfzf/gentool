@@ -72,4 +72,5 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 	}
 
 	g.Execute()
+	fmt.Println("Done.")
 }

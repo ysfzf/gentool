@@ -235,7 +235,8 @@ func (tab Tab) genGetAll(buf *bytes.Buffer) {
 		}
 
 	}
-
+	buf.WriteString("      Page  uint `form:\"page,optional,default=1\"`\n")
+	buf.WriteString("      Limit uint `form:\"limit,optional,default=10\"`\n")
 	buf.WriteString("   }\n\n")
 	buf.WriteString("   Get" + tab.Name + "Response {\n")
 	buf.WriteString(fmt.Sprintf("      Items   []%s `json:\"itmes\"`\n", tab.Name))

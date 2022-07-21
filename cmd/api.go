@@ -61,4 +61,6 @@ func generateApi() {
 		writeFile(cc.OutFile, s.String())
 	}
 
+	fmt.Println("Done.")
+
 }

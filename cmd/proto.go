@@ -64,6 +64,8 @@ func generateProto() {
 		writeFile(cc.OutFile, s.String())
 	}
 
+	fmt.Println("Done.")
+
 }
 
 func writeFile(filePath, content string) (bool, error) {
