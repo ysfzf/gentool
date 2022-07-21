@@ -147,18 +147,66 @@ func (s *SchemaApi) String() string {
 	buf.WriteString("// ------------------------------------ \n")
 	buf.WriteString("// Types\n")
 	buf.WriteString("// ------------------------------------ \n\n")
+
+	buf.WriteString("type (\n")
+	buf.WriteString("   IDRequest {\n")
+	buf.WriteString("      ID uint  `path:\"id\"`\n")
+	buf.WriteString("   }\n\n")
 	for _, tab := range s.Tables {
-		buf.WriteString("//--------------------------------" + tab.Comment + "--------------------------------")
+		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
 		buf.WriteString("\n")
 		tab.genDefault(buf)
+		buf.WriteString("\n")
 		tab.genGetAll(buf)
-	}
+		tab.genGetInfo(buf)
+		buf.WriteString("\n")
+		tab.genAdd(buf)
+		buf.WriteString("\n")
+		tab.genUpdate(buf)
+		buf.WriteString("\n")
 
+	}
+	buf.WriteString(")\n\n\n")
+
+	buf.WriteString("// ------------------------------------ \n")
+	buf.WriteString("// Services\n")
+	buf.WriteString("// ------------------------------------ \n\n")
+	temp := `
+@server(
+	prefix: v1/%s
+	group: %s
+	jwt: Auth
+)`
+
+	buf.WriteString(fmt.Sprintf(temp, s.ServiceName, s.ServiceName))
+	buf.WriteString("\n")
+	buf.WriteString("service " + s.ServiceName + "-api{\n\n")
+
+	for _, tab := range s.Tables {
+		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
+		buf.WriteString("\n")
+
+		buf.WriteString("   @handler Get" + tab.Name + "\n")
+		buf.WriteString(fmt.Sprintf("   get /%s (Get%sRequest) returns(Get%sResponse)\n\n", tab.Name, tab.Name, tab.Name))
+
+		buf.WriteString("   @handler Get" + tab.Name + "Info\n")
+		buf.WriteString(fmt.Sprintf("   get /%s/:id (IDRequest) returns(%sInfoResponse)\n\n", tab.Name, tab.Name))
+
+		buf.WriteString("   @handler Add" + tab.Name + "\n")
+		buf.WriteString(fmt.Sprintf("   post /%s (Add%sRequest) \n\n", tab.Name, tab.Name))
+
+		buf.WriteString("   @handler Update" + tab.Name + "\n")
+		buf.WriteString(fmt.Sprintf("   put /%s/:id (Update%sRequest) \n\n", tab.Name, tab.Name))
+
+		buf.WriteString("   @handler Delete" + tab.Name + "\n")
+		buf.WriteString(fmt.Sprintf("   delete /%s/:id (IDRequest) \n\n", tab.Name))
+	}
+	buf.WriteString("}\n\n")
 	return buf.String()
 }
 
 func (tab Tab) genDefault(buf *bytes.Buffer) {
-	buf.WriteString("type " + tab.Name + " {\n")
+	buf.WriteString("   " + tab.Name + " {\n")
 	for _, field := range tab.Fields {
 		name := From(field.Name).ToCamel()
 		comment := ""
@@ -166,26 +214,80 @@ func (tab Tab) genDefault(buf *bytes.Buffer) {
 		if field.Comment != "" {
 			comment = "// " + field.Comment
 		}
-		buf.WriteString(fmt.Sprintf("   %s  %s %s  %s \n", name, field.Typ, tag, comment))
+		buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
 	}
 
-	buf.WriteString("}\n")
+	buf.WriteString("   }\n\n")
 }
 
 func (tab Tab) genGetAll(buf *bytes.Buffer) {
-	buf.WriteString("type Get" + tab.Name + "Request {\n")
+	buf.WriteString("   Get" + tab.Name + "Request {\n")
 	for _, field := range tab.Fields {
 		if !isInSlice(except, field.Name) {
 			name := From(field.Name).ToCamel()
 			comment := ""
-			tag := fmt.Sprintf("`form:\"column:%s,optional\"`", field.Name)
+			tag := fmt.Sprintf("`form:\"%s,optional\"`", field.Name)
 			if field.Comment != "" {
 				comment = "// " + field.Comment
 			}
-			buf.WriteString(fmt.Sprintf("   %s  %s %s  %s \n", name, field.Typ, tag, comment))
+			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
 		}
 
 	}
 
-	buf.WriteString("}\n")
+	buf.WriteString("   }\n\n")
+	buf.WriteString("   Get" + tab.Name + "Response {\n")
+	buf.WriteString(fmt.Sprintf("      Items   []%s `json:\"itmes\"`\n", tab.Name))
+	buf.WriteString("      Current uint `json:\"current_page\"`\n")
+	buf.WriteString("      Last  uint  `json:\"last_page\"`\n")
+	buf.WriteString("      Total uint  `json:\"total\"`\n")
+	buf.WriteString("   }\n\n")
+}
+
+func (tab Tab) genGetInfo(buf *bytes.Buffer) {
+
+	buf.WriteString("   " + tab.Name + "InfoResponse {\n")
+	buf.WriteString(fmt.Sprintf("      %s \n", tab.Name))
+
+	buf.WriteString("   }\n\n")
+}
+
+func (tab Tab) genAdd(buf *bytes.Buffer) {
+	buf.WriteString("   Add" + tab.Name + "Request {\n")
+	for _, field := range tab.Fields {
+		if !isInSlice(except, field.Name) {
+			name := From(field.Name).ToCamel()
+			comment := ""
+			tag := fmt.Sprintf("`form:\"%s\"`", field.Name)
+			if field.Comment != "" {
+				comment = "// " + field.Comment
+			}
+			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
+		}
+
+	}
+
+	buf.WriteString("   }\n\n")
+
+}
+
+func (tab Tab) genUpdate(buf *bytes.Buffer) {
+	buf.WriteString("   Update" + tab.Name + "Request {\n")
+	buf.WriteString("      ID uint  `path:\"id\"`\n")
+
+	for _, field := range tab.Fields {
+		if !isInSlice(except, field.Name) {
+			name := From(field.Name).ToCamel()
+			comment := ""
+			tag := fmt.Sprintf("`form:\"%s,optional\"`", field.Name)
+			if field.Comment != "" {
+				comment = "// " + field.Comment
+			}
+			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
+		}
+
+	}
+
+	buf.WriteString("   }\n\n")
+
 }

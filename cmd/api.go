@@ -57,10 +57,8 @@ func generateApi() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(s.String())
-	// if nil != s {
-
-	// 	writeFile(cc.OutFile, s.String())
-	// }
+	if nil != s {
+		writeFile(cc.OutFile, s.String())
+	}
 
 }
