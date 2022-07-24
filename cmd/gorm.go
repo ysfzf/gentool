@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// gormCmd represents the gorm command
 var gormCmd = &cobra.Command{
 	Use:   "gorm",
 	Short: "Generate gorm model file from database",
