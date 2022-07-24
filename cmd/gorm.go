@@ -70,6 +70,15 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 
 		opts := []gen.FieldOpt{}
 		for _, relate := range tab.Relates {
+
+			if relate.Column == "" {
+				log.Fatal("unkonw relate column")
+			}
+
+			if relate.Table == "" {
+				log.Fatal("unkonw relate table")
+			}
+
 			t := field.BelongsTo
 
 			switch relate.Type {

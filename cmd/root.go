@@ -64,7 +64,7 @@ type GenRelate struct {
 
 var rootCmd = &cobra.Command{
 	Use:   "gentool",
-	Short: "Generate a proto file or gorm model file",
+	Short: "gentool v1.0.1 , Generate a proto file or gorm model file",
 	Long:  ``,
 }
 
