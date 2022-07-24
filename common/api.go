@@ -93,7 +93,7 @@ func parseApiColumn(s *SchemaApi, msg *Tab, col Column) error {
 		enumList := regexp.MustCompile(`[enum|set]\((.+?)\)`).FindStringSubmatch(col.ColumnType)
 		enums := strings.FieldsFunc(enumList[1], func(c rune) bool {
 			cs := string(c)
-			return "," == cs || "'" == cs
+			return cs == "," || cs == "'"
 		})
 
 		enumName := inflect.Singularize(snaker.SnakeToCamel(col.TableName)) + snaker.SnakeToCamel(col.ColumnName)
@@ -118,7 +118,7 @@ func parseApiColumn(s *SchemaApi, msg *Tab, col Column) error {
 		fieldType = "float64"
 	}
 
-	if "" == fieldType {
+	if fieldType == "" {
 		return fmt.Errorf("no compatible protobuf type found for `%s`. column: `%s`.`%s`", col.DataType, col.TableName, col.ColumnName)
 	}
 
@@ -179,30 +179,30 @@ func (s *SchemaApi) String() string {
 	jwt: Auth
 )`
 
-	buf.WriteString(fmt.Sprintf(temp, s.ServiceName, s.ServiceName))
-	buf.WriteString("\n")
-	buf.WriteString("service " + s.ServiceName + "-api{\n\n")
-
 	for _, tab := range s.Tables {
-		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
+		buf.WriteString("//--------------------------------" + tab.Comment + "--------------------------------")
+		buf.WriteString(fmt.Sprintf(temp, s.ServiceName, tab.TableName))
+		buf.WriteString("\n")
+		buf.WriteString("service " + s.ServiceName + "-api{")
 		buf.WriteString("\n")
 
-		buf.WriteString("   @handler " + tab.Name + "Find \n")
+		buf.WriteString("   @handler Find \n")
 		buf.WriteString(fmt.Sprintf("   get /%s (Get%sRequest) returns(Get%sResponse)\n\n", tab.TableName, tab.Name, tab.Name))
 
-		buf.WriteString("   @handler " + tab.Name + "Show \n")
+		buf.WriteString("   @handler Show \n")
 		buf.WriteString(fmt.Sprintf("   get /%s/:id (IDRequest) returns(%sInfoResponse)\n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler " + tab.Name + "Add \n")
+		buf.WriteString("   @handler Add \n")
 		buf.WriteString(fmt.Sprintf("   post /%s (Add%sRequest) \n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler " + tab.Name + "Update \n")
+		buf.WriteString("   @handler Update \n")
 		buf.WriteString(fmt.Sprintf("   put /%s/:id (Update%sRequest) \n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler " + tab.Name + "Delete \n")
+		buf.WriteString("   @handler Delete \n")
 		buf.WriteString(fmt.Sprintf("   delete /%s/:id (IDRequest) \n\n", tab.TableName))
+		buf.WriteString("}\n\n")
 	}
-	buf.WriteString("}\n\n")
+
 	return buf.String()
 }
 
