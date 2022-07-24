@@ -3,10 +3,16 @@ host: localhost
 port: 3306
 user: root
 password: 123456
-schema: ff
+schema: fcar
 tables: 
-  - users
-  - merchant_users
+  - name: shops
+  - name: users
+  - name: shop_goods
+    as: ShopGoods
+    relates:
+    - table: shops
+      type: belongs_to
+      column: shop_id
 onlyModel: false
 outPath: ./dao/query
 outFile:

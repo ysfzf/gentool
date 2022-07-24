@@ -8,8 +8,8 @@ require (
 	github.com/spf13/cobra v1.5.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.4
-	gorm.io/gen v0.3.9
-	gorm.io/gorm v1.23.7
+	gorm.io/gen v0.3.13
+	gorm.io/gorm v1.23.9-0.20220713102635-3262daf8d468
 )
 
 require (
