@@ -24,3 +24,5 @@ _testmain.go
 .idea/**
 query
 *.proto
+./dao
+.test

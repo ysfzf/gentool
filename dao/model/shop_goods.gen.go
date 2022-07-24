@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const TableNameShopGood = "shop_goods"
+const TableNameShopGoods = "shop_goods"
 
-// ShopGood mapped from table <shop_goods>
-type ShopGood struct {
+// ShopGoods mapped from table <shop_goods>
+type ShopGoods struct {
 	ID           int64          `gorm:"column:id;type:bigint(20) unsigned;primaryKey;autoIncrement:true" json:"id"` // ID
 	CreatedAt    time.Time      `gorm:"column:created_at;type:datetime;not null" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"column:updated_at;type:datetime;not null" json:"updated_at"`
@@ -31,10 +31,10 @@ type ShopGood struct {
 	Sn           string         `gorm:"column:sn;type:varchar(64);not null" json:"sn"`                                   // 编号
 	UpdateBy     int64          `gorm:"column:update_by;type:bigint(20) unsigned;not null" json:"update_by"`             // 操作人
 	MinNum       *float64       `gorm:"column:min_num;type:decimal(10,2) unsigned;not null;default:0.00" json:"min_num"` // 最少库存量
-	Shop         Shop           `json:"shop"`
+	Shops        Shop           `gorm:"foreignKey:shop_id" json:"shops"`
 }
 
-// TableName ShopGood's table name
-func (*ShopGood) TableName() string {
-	return TableNameShopGood
+// TableName ShopGoods's table name
+func (*ShopGoods) TableName() string {
+	return TableNameShopGoods
 }

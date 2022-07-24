@@ -19,14 +19,14 @@ func main() {
 	}
 	query.SetDefault(db)
 
-	g := query.Q.ShopGood
+	g := query.Q.ShopGoods
 
-	goods, err := g.WithContext(context.Background()).Where(g.ID.Eq(1)).Preload(g.Shop).First()
+	goods, err := g.WithContext(context.Background()).Where(g.ID.Eq(1)).Preload(g.Shops).First()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	shop, err := g.Shop.WithContext(context.Background()).Model(goods).Find()
+	shop, err := g.Shops.WithContext(context.Background()).Model(goods).Find()
 	if err != nil {
 		fmt.Println(err)
 		return

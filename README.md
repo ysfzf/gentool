@@ -50,8 +50,14 @@ user: root
 password: 123456
 schema: fcar
 tables: 
-  - users
-  - merchant_users
+  - name: shops
+  - name: users
+  - name: shop_goods  #table name
+    as: ShopGoods  #struct name
+    relates:
+    - table: shops   #relate table name
+      type: belongs_to  #relate type
+      column: shop_id  #relate column 
 onlyModel: false
 outPath: ./dao/query  #Cannot end with "model"
 outFile:

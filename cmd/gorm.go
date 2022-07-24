@@ -11,7 +11,6 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 
-	"gorm.io/gen/internal/generate"
 	"gorm.io/gorm"
 )
 
@@ -66,12 +65,10 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 	}
 	g.UseDB(gdb)
 
-	models := make(map[string]*generate.QueryStructMeta, len(c.Tables))
+	models := make([]interface{}, len(c.Tables))
 
-	for _, tab := range c.Tables {
-		// models[tab.Name] = g.GenerateModel(tab.Name)
+	for index, tab := range c.Tables {
 
-		// tmp := g.GenerateModelAs(tab.Name, tab.As)
 		opts := []gen.FieldOpt{}
 		for _, relate := range tab.Relates {
 			t := field.BelongsTo
@@ -84,38 +81,25 @@ func generateGorm(db *sql.DB, c *GenConfig) {
 			case "many_to_many":
 				t = field.Many2Many
 			}
-			model, ok := models[relate.Table]
-			if !ok {
-				log.Fatal("unknow relate table " + relate.Table)
-			}
-			opt := gen.FieldRelate(t, common.From(relate.Table).ToCamel(), model, &field.RelateConfig{
-				GORMTag: "",
+
+			tmpModel := g.GenerateModel(relate.Table)
+			opt := gen.FieldRelate(t, common.From(relate.Table).ToCamel(), tmpModel, &field.RelateConfig{
+				GORMTag: "foreignKey:" + relate.Column,
 			})
 			opts = append(opts, opt)
 		}
 		if tab.As == "" {
-			models[tab.Name] = g.GenerateModel(tab.Name, opts...)
+			models[index] = g.GenerateModel(tab.Name, opts...)
 		} else {
-			models[tab.Name] = g.GenerateModelAs(tab.Name, tab.As, opts...)
+			models[index] = g.GenerateModelAs(tab.Name, tab.As, opts...)
 		}
 	}
-	// models := make([]interface{}, len(c.Tables))
 
-	// for i, table := range c.Tables {
-	// 	models[i] = g.GenerateModel(table)
-	// }
 	if !c.OnlyModel {
-		mods := make([]interface{}, len(c.Tables))
-		for _, mod := range models {
-			mods = append(mods, mod)
-		}
-		g.ApplyBasic(mods...)
+		g.ApplyBasic(models...)
 
 	}
-	// shops := g.GenerateModel("shops")
-	// fmt.Println(shops.QueryStructName)
-	// goods := g.GenerateModel("shop_goods", gen.FieldRelate(field.BelongsTo, "Shop", shops, &field.RelateConfig{}))
-	// g.ApplyBasic(shops, goods)
+
 	g.Execute()
 	fmt.Println("Done.")
 
