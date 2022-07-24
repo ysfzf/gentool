@@ -187,19 +187,19 @@ func (s *SchemaApi) String() string {
 		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
 		buf.WriteString("\n")
 
-		buf.WriteString("   @handler Get" + tab.Name + "\n")
+		buf.WriteString("   @handler " + tab.Name + "Find \n")
 		buf.WriteString(fmt.Sprintf("   get /%s (Get%sRequest) returns(Get%sResponse)\n\n", tab.TableName, tab.Name, tab.Name))
 
-		buf.WriteString("   @handler Get" + tab.Name + "Info\n")
+		buf.WriteString("   @handler " + tab.Name + "Show \n")
 		buf.WriteString(fmt.Sprintf("   get /%s/:id (IDRequest) returns(%sInfoResponse)\n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler Add" + tab.Name + "\n")
+		buf.WriteString("   @handler " + tab.Name + "Add \n")
 		buf.WriteString(fmt.Sprintf("   post /%s (Add%sRequest) \n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler Update" + tab.Name + "\n")
+		buf.WriteString("   @handler " + tab.Name + "Update \n")
 		buf.WriteString(fmt.Sprintf("   put /%s/:id (Update%sRequest) \n\n", tab.TableName, tab.Name))
 
-		buf.WriteString("   @handler Delete" + tab.Name + "\n")
+		buf.WriteString("   @handler " + tab.Name + "Delete \n")
 		buf.WriteString(fmt.Sprintf("   delete /%s/:id (IDRequest) \n\n", tab.TableName))
 	}
 	buf.WriteString("}\n\n")
