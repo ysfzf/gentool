@@ -71,7 +71,7 @@ func GenerateApi(db *sql.DB, table string, ignoreTables, ignoreColumns []string,
 		if nil != err {
 			return nil, err
 		}
-		// s.Types = append(s.Types, *msg)
+
 	}
 
 	for _, t := range typMap {
@@ -260,7 +260,11 @@ func (tab Tab) genAdd(buf *bytes.Buffer) {
 		if !isInSlice(except, field.Name) {
 			name := From(field.Name).ToCamel()
 			comment := ""
-			tag := fmt.Sprintf("`form:\"%s\"`", field.Name)
+			validate := ""
+			if field.Typ == "string" {
+				validate = " validate:\"min=2,max:255\""
+			}
+			tag := fmt.Sprintf("`form:\"%s\" json:\"%s\"%s`", field.Name, field.Name, validate)
 			if field.Comment != "" {
 				comment = "// " + field.Comment
 			}
@@ -281,7 +285,11 @@ func (tab Tab) genUpdate(buf *bytes.Buffer) {
 		if !isInSlice(except, field.Name) {
 			name := From(field.Name).ToCamel()
 			comment := ""
-			tag := fmt.Sprintf("`form:\"%s,optional\"`", field.Name)
+			validate := ""
+			if field.Typ == "string" {
+				validate = " validate:\"min=2,max:255\""
+			}
+			tag := fmt.Sprintf("`form:\"%s,optional\" json:\"%s\"%s`", field.Name, field.Name, validate)
 			if field.Comment != "" {
 				comment = "// " + field.Comment
 			}

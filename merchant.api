@@ -1,0 +1,302 @@
+syntax = "v1";
+
+info( 
+	 title: " merchant "
+	 desc: "API文件"
+	 author: "xxx"
+	 email: "xxx@yyy.com"
+	 version: "v1"
+)
+
+// ------------------------------------ 
+// Types
+// ------------------------------------ 
+
+type (
+   IDRequest {
+      ID uint  `path:"id"`
+   }
+
+   //--------------------------------merchantUsers--------------------------------
+   MerchantUser {
+      Id  int64 `gorm:"column:id" json:"id"`   
+      Mid  int64 `gorm:"column:mid" json:"mid"`   
+      Username  string `gorm:"column:username" json:"username"`   
+      Password  string `gorm:"column:password" json:"password"`   
+      Salt  string `gorm:"column:salt" json:"salt"`   
+      Name  string `gorm:"column:name" json:"name"`   
+      Avatar  string `gorm:"column:avatar" json:"avatar"`   
+      CreatedAt  string `gorm:"column:created_at" json:"created_at"`   
+      UpdatedAt  string `gorm:"column:updated_at" json:"updated_at"`   
+      DeletedAt  string `gorm:"column:deleted_at" json:"deleted_at"`   
+   }
+
+
+   GetMerchantUserRequest {
+      Mid  int64 `form:"mid,optional"`   
+      Username  string `form:"username,optional"`   
+      Password  string `form:"password,optional"`   
+      Salt  string `form:"salt,optional"`   
+      Name  string `form:"name,optional"`   
+      Avatar  string `form:"avatar,optional"`   
+      Page  uint `form:"page,optional,default=1"`
+      Limit uint `form:"limit,optional,default=10"`
+   }
+
+   GetMerchantUserResponse {
+      Items   []MerchantUser `json:"itmes"`
+      Current uint `json:"current_page"`
+      Last  uint  `json:"last_page"`
+      Total uint  `json:"total"`
+   }
+
+   MerchantUserInfoResponse {
+      MerchantUser 
+   }
+
+
+   AddMerchantUserRequest {
+      Mid  int64 `form:"mid" json:"mid"`   
+      Username  string `form:"username" json:"username" validate:"min=2,max:255"`   
+      Password  string `form:"password" json:"password" validate:"min=2,max:255"`   
+      Salt  string `form:"salt" json:"salt" validate:"min=2,max:255"`   
+      Name  string `form:"name" json:"name" validate:"min=2,max:255"`   
+      Avatar  string `form:"avatar" json:"avatar" validate:"min=2,max:255"`   
+   }
+
+
+   UpdateMerchantUserRequest {
+      ID uint  `path:"id"`
+      Mid  int64 `form:"mid,optional" json:"mid"`   
+      Username  string `form:"username,optional" json:"username" validate:"min=2,max:255"`   
+      Password  string `form:"password,optional" json:"password" validate:"min=2,max:255"`   
+      Salt  string `form:"salt,optional" json:"salt" validate:"min=2,max:255"`   
+      Name  string `form:"name,optional" json:"name" validate:"min=2,max:255"`   
+      Avatar  string `form:"avatar,optional" json:"avatar" validate:"min=2,max:255"`   
+   }
+
+
+   //--------------------------------商户店铺设置--------------------------------
+   Shop {
+      Id  int64 `gorm:"column:id" json:"id"`  // id 
+      CreatedAt  string `gorm:"column:created_at" json:"created_at"`  // 创建时间 
+      UpdatedAt  string `gorm:"column:updated_at" json:"updated_at"`  // 更新时间 
+      DeletedAt  string `gorm:"column:deleted_at" json:"deleted_at"`  // 删除时间 
+      Mid  int64 `gorm:"column:mid" json:"mid"`  // 商户 
+      Status  int64 `gorm:"column:status" json:"status"`  // 状态 0=禁用,1=暂停营业(商家),2=打烊(系统),3=正常 
+      Name  string `gorm:"column:name" json:"name"`  // 店铺名称 
+      Province  string `gorm:"column:province" json:"province"`  // 省 
+      City  string `gorm:"column:city" json:"city"`  // 市 
+      Area  string `gorm:"column:area" json:"area"`  // 区 
+      Street  string `gorm:"column:street" json:"street"`  // 街道地址 
+      Contact  string `gorm:"column:contact" json:"contact"`  // 联系人 
+      Tel  string `gorm:"column:tel" json:"tel"`  // 商家电话 
+      StartTime  string `gorm:"column:start_time" json:"start_time"`  // 开始营业时间 
+      EndTime  string `gorm:"column:end_time" json:"end_time"`  // 结束营业时间 
+      Lat  string `gorm:"column:lat" json:"lat"`  // 纬度 
+      Lng  string `gorm:"column:lng" json:"lng"`  // 经度 
+      Notice  string `gorm:"column:notice" json:"notice"`  // 公告 
+   }
+
+
+   GetShopRequest {
+      Mid  int64 `form:"mid,optional"`  // 商户 
+      Status  int64 `form:"status,optional"`  // 状态 0=禁用,1=暂停营业(商家),2=打烊(系统),3=正常 
+      Name  string `form:"name,optional"`  // 店铺名称 
+      Province  string `form:"province,optional"`  // 省 
+      City  string `form:"city,optional"`  // 市 
+      Area  string `form:"area,optional"`  // 区 
+      Street  string `form:"street,optional"`  // 街道地址 
+      Contact  string `form:"contact,optional"`  // 联系人 
+      Tel  string `form:"tel,optional"`  // 商家电话 
+      StartTime  string `form:"start_time,optional"`  // 开始营业时间 
+      EndTime  string `form:"end_time,optional"`  // 结束营业时间 
+      Lat  string `form:"lat,optional"`  // 纬度 
+      Lng  string `form:"lng,optional"`  // 经度 
+      Notice  string `form:"notice,optional"`  // 公告 
+      Page  uint `form:"page,optional,default=1"`
+      Limit uint `form:"limit,optional,default=10"`
+   }
+
+   GetShopResponse {
+      Items   []Shop `json:"itmes"`
+      Current uint `json:"current_page"`
+      Last  uint  `json:"last_page"`
+      Total uint  `json:"total"`
+   }
+
+   ShopInfoResponse {
+      Shop 
+   }
+
+
+   AddShopRequest {
+      Mid  int64 `form:"mid" json:"mid"`  // 商户 
+      Status  int64 `form:"status" json:"status"`  // 状态 0=禁用,1=暂停营业(商家),2=打烊(系统),3=正常 
+      Name  string `form:"name" json:"name" validate:"min=2,max:255"`  // 店铺名称 
+      Province  string `form:"province" json:"province" validate:"min=2,max:255"`  // 省 
+      City  string `form:"city" json:"city" validate:"min=2,max:255"`  // 市 
+      Area  string `form:"area" json:"area" validate:"min=2,max:255"`  // 区 
+      Street  string `form:"street" json:"street" validate:"min=2,max:255"`  // 街道地址 
+      Contact  string `form:"contact" json:"contact" validate:"min=2,max:255"`  // 联系人 
+      Tel  string `form:"tel" json:"tel" validate:"min=2,max:255"`  // 商家电话 
+      StartTime  string `form:"start_time" json:"start_time" validate:"min=2,max:255"`  // 开始营业时间 
+      EndTime  string `form:"end_time" json:"end_time" validate:"min=2,max:255"`  // 结束营业时间 
+      Lat  string `form:"lat" json:"lat" validate:"min=2,max:255"`  // 纬度 
+      Lng  string `form:"lng" json:"lng" validate:"min=2,max:255"`  // 经度 
+      Notice  string `form:"notice" json:"notice" validate:"min=2,max:255"`  // 公告 
+   }
+
+
+   UpdateShopRequest {
+      ID uint  `path:"id"`
+      Mid  int64 `form:"mid,optional" json:"mid"`  // 商户 
+      Status  int64 `form:"status,optional" json:"status"`  // 状态 0=禁用,1=暂停营业(商家),2=打烊(系统),3=正常 
+      Name  string `form:"name,optional" json:"name" validate:"min=2,max:255"`  // 店铺名称 
+      Province  string `form:"province,optional" json:"province" validate:"min=2,max:255"`  // 省 
+      City  string `form:"city,optional" json:"city" validate:"min=2,max:255"`  // 市 
+      Area  string `form:"area,optional" json:"area" validate:"min=2,max:255"`  // 区 
+      Street  string `form:"street,optional" json:"street" validate:"min=2,max:255"`  // 街道地址 
+      Contact  string `form:"contact,optional" json:"contact" validate:"min=2,max:255"`  // 联系人 
+      Tel  string `form:"tel,optional" json:"tel" validate:"min=2,max:255"`  // 商家电话 
+      StartTime  string `form:"start_time,optional" json:"start_time" validate:"min=2,max:255"`  // 开始营业时间 
+      EndTime  string `form:"end_time,optional" json:"end_time" validate:"min=2,max:255"`  // 结束营业时间 
+      Lat  string `form:"lat,optional" json:"lat" validate:"min=2,max:255"`  // 纬度 
+      Lng  string `form:"lng,optional" json:"lng" validate:"min=2,max:255"`  // 经度 
+      Notice  string `form:"notice,optional" json:"notice" validate:"min=2,max:255"`  // 公告 
+   }
+
+
+   //--------------------------------users--------------------------------
+   User {
+      Id  int64 `gorm:"column:id" json:"id"`   
+      Name  string `gorm:"column:name" json:"name"`   
+      Email  string `gorm:"column:email" json:"email"`   
+      EmailVerifiedAt  string `gorm:"column:email_verified_at" json:"email_verified_at"`   
+      Password  string `gorm:"column:password" json:"password"`   
+      RememberToken  string `gorm:"column:remember_token" json:"remember_token"`   
+      CreatedAt  string `gorm:"column:created_at" json:"created_at"`   
+      UpdatedAt  string `gorm:"column:updated_at" json:"updated_at"`   
+   }
+
+
+   GetUserRequest {
+      Name  string `form:"name,optional"`   
+      Email  string `form:"email,optional"`   
+      EmailVerifiedAt  string `form:"email_verified_at,optional"`   
+      Password  string `form:"password,optional"`   
+      RememberToken  string `form:"remember_token,optional"`   
+      Page  uint `form:"page,optional,default=1"`
+      Limit uint `form:"limit,optional,default=10"`
+   }
+
+   GetUserResponse {
+      Items   []User `json:"itmes"`
+      Current uint `json:"current_page"`
+      Last  uint  `json:"last_page"`
+      Total uint  `json:"total"`
+   }
+
+   UserInfoResponse {
+      User 
+   }
+
+
+   AddUserRequest {
+      Name  string `form:"name" json:"name" validate:"min=2,max:255"`   
+      Email  string `form:"email" json:"email" validate:"min=2,max:255"`   
+      EmailVerifiedAt  string `form:"email_verified_at" json:"email_verified_at" validate:"min=2,max:255"`   
+      Password  string `form:"password" json:"password" validate:"min=2,max:255"`   
+      RememberToken  string `form:"remember_token" json:"remember_token" validate:"min=2,max:255"`   
+   }
+
+
+   UpdateUserRequest {
+      ID uint  `path:"id"`
+      Name  string `form:"name,optional" json:"name" validate:"min=2,max:255"`   
+      Email  string `form:"email,optional" json:"email" validate:"min=2,max:255"`   
+      EmailVerifiedAt  string `form:"email_verified_at,optional" json:"email_verified_at" validate:"min=2,max:255"`   
+      Password  string `form:"password,optional" json:"password" validate:"min=2,max:255"`   
+      RememberToken  string `form:"remember_token,optional" json:"remember_token" validate:"min=2,max:255"`   
+   }
+
+
+)
+
+
+// ------------------------------------ 
+// Services
+// ------------------------------------ 
+
+//--------------------------------merchantUsers--------------------------------
+@server(
+	prefix: v1/merchant
+	group: merchant_users
+	jwt: Auth
+)
+service merchant-api{
+   @handler Find 
+   get /merchant_users (GetMerchantUserRequest) returns(GetMerchantUserResponse)
+
+   @handler Show 
+   get /merchant_users/:id (IDRequest) returns(MerchantUserInfoResponse)
+
+   @handler Add 
+   post /merchant_users (AddMerchantUserRequest) 
+
+   @handler Update 
+   put /merchant_users/:id (UpdateMerchantUserRequest) 
+
+   @handler Delete 
+   delete /merchant_users/:id (IDRequest) 
+
+}
+
+//--------------------------------商户店铺设置--------------------------------
+@server(
+	prefix: v1/merchant
+	group: shops
+	jwt: Auth
+)
+service merchant-api{
+   @handler Find 
+   get /shops (GetShopRequest) returns(GetShopResponse)
+
+   @handler Show 
+   get /shops/:id (IDRequest) returns(ShopInfoResponse)
+
+   @handler Add 
+   post /shops (AddShopRequest) 
+
+   @handler Update 
+   put /shops/:id (UpdateShopRequest) 
+
+   @handler Delete 
+   delete /shops/:id (IDRequest) 
+
+}
+
+//--------------------------------users--------------------------------
+@server(
+	prefix: v1/merchant
+	group: users
+	jwt: Auth
+)
+service merchant-api{
+   @handler Find 
+   get /users (GetUserRequest) returns(GetUserResponse)
+
+   @handler Show 
+   get /users/:id (IDRequest) returns(UserInfoResponse)
+
+   @handler Add 
+   post /users (AddUserRequest) 
+
+   @handler Update 
+   put /users/:id (UpdateUserRequest) 
+
+   @handler Delete 
+   delete /users/:id (IDRequest) 
+
+}
+
