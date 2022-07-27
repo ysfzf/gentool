@@ -22,41 +22,41 @@ const (
 	indent = "  "
 )
 
-var except = []string{}
+func (conf ProtoConfig) GenerateSchema() (*Schema, error) {
 
-// GenerateSchema generates a protobuf schema from a database connection and a package name.
-// A list of tables to ignore may also be supplied.
-// The returned schema implements the `fmt.Stringer` interface, in order to generate a string
-// representation of a protobuf schema.
-// Do not rely on the structure of the Generated schema to provide any context about
-// the protobuf types. The schema reflects the layout of a protobuf file and should be used
-// to pipe the output of the `Schema.String()` to a file.
-func GenerateSchema(db *sql.DB, table string, ignoreTables, ignoreColumns []string, serviceName, goPkg, pkg string) (*Schema, error) {
-	s := &Schema{}
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Schema)
+	db, err := sql.Open(conf.DbType, connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	except = append(ignoreColumns, "id")
+	defer db.Close()
+	s := &Schema{
+		pconf: &conf,
+	}
+
 	dbs, err := dbSchema(db)
 	if nil != err {
 		return nil, err
 	}
 
 	s.Syntax = proto3
-	s.ServiceName = serviceName
-	if pkg != "" {
-		s.Package = pkg
+	s.ServiceName = conf.ServiceName
+	if conf.PackageName != "" {
+		s.Package = conf.PackageName
 	}
-	if goPkg != "" {
-		s.GoPackage = goPkg
+	if conf.GoPackageName != "" {
+		s.GoPackage = conf.GoPackageName
 	} else {
 		s.GoPackage = "./" + s.Package
 	}
-
+	table := strings.Join(conf.Tables, ",")
 	cols, err := dbColumns(db, dbs, table)
 	if nil != err {
 		return nil, err
 	}
 
-	err = typesFromColumns(s, cols, ignoreTables)
+	err = typesFromColumns(s, cols, conf.IgnoreTables)
 	if nil != err {
 		return nil, err
 	}
@@ -125,7 +125,6 @@ func dbColumns(db *sql.DB, schema, table string) ([]Column, error) {
 	}
 
 	q += " ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION"
-
 	rows, err := db.Query(q, schema)
 	if nil != err {
 		return nil, err
@@ -163,6 +162,7 @@ type Schema struct {
 	Imports     sort.StringSlice
 	Messages    MessageCollection
 	Enums       EnumCollection
+	pconf       *ProtoConfig
 }
 
 // MessageCollection represents a sortable collection of messages.
@@ -228,12 +228,12 @@ func (s *Schema) String() string {
 	for _, m := range s.Messages {
 		buf.WriteString("//--------------------------------" + m.Comment + "--------------------------------")
 		buf.WriteString("\n")
-		m.GenDefaultMessage(buf)
-		m.GenRpcAddReqRespMessage(buf)
-		m.GenRpcUpdateReqMessage(buf)
+		m.GenDefaultMessage(buf, s)
+		m.GenRpcAddReqRespMessage(buf, s)
+		m.GenRpcUpdateReqMessage(buf, s)
 		m.GenRpcDelReqMessage(buf)
 		m.GenRpcGetByIdReqMessage(buf)
-		m.GenRpcSearchReqMessage(buf)
+		m.GenRpcSearchReqMessage(buf, s)
 	}
 
 	buf.WriteString("\n")
@@ -363,14 +363,14 @@ type Message struct {
 }
 
 //gen default message
-func (m Message) GenDefaultMessage(buf *bytes.Buffer) {
+func (m Message) GenDefaultMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
 
 	curFields := []MessageField{}
 	var filedTag int
 	for _, field := range m.Fields {
-		if isInSlice(except, field.Name) && field.Name != "id" {
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) {
 			continue
 		}
 		filedTag++
@@ -390,7 +390,7 @@ func (m Message) GenDefaultMessage(buf *bytes.Buffer) {
 }
 
 //gen add req message
-func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer) {
+func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
 
@@ -399,7 +399,7 @@ func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer) {
 	curFields := []MessageField{}
 	var filedTag int
 	for _, field := range m.Fields {
-		if isInSlice(except, field.Name) {
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
 			continue
 		}
 		filedTag++
@@ -432,7 +432,7 @@ func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer) {
 }
 
 //gen add resp message
-func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer) {
+func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
 
@@ -440,7 +440,7 @@ func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer) {
 	curFields := []MessageField{}
 	var filedTag int
 	for _, field := range m.Fields {
-		if isInSlice(except, field.Name) && field.Name != "id" {
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
 			continue
 		}
 		filedTag++
@@ -525,7 +525,7 @@ func (m Message) GenRpcGetByIdReqMessage(buf *bytes.Buffer) {
 }
 
 //gen add resp message
-func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer) {
+func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
 
@@ -536,7 +536,7 @@ func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer) {
 	}
 	var filedTag = len(curFields)
 	for _, field := range m.Fields {
-		if isInSlice(except, field.Name) {
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
 			continue
 		}
 		filedTag++

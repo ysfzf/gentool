@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/mynameisfzf/gentool/common"
 	"github.com/spf13/cobra"
@@ -12,8 +10,8 @@ import (
 
 var apiCmd = &cobra.Command{
 	Use:   "api",
-	Short: "Generate api file from database",
-	Long: `This command generates a api file for use in the gozero project. For example:
+	Short: "通过数据表创建一个api文件",
+	Long: `这个命令可以根据数据表结构创建一个go-zero项目的api文件,栗子:
 
 	gentool api --config xxx.yaml
  `,
@@ -28,30 +26,21 @@ func init() {
 
 func generateApi() {
 	if Cfg == "" {
-		fmt.Println("未知配置文件")
+		fmt.Println(" - 未知配置文件")
 		return
 	}
-	var cc ProtoConfig
-	err := loadConfig(Cfg, &cc)
+	var cc common.ProtoConfig
+	err := common.LoadConfig(Cfg, &cc)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if cc.Schema == "" {
-		fmt.Println(" - please input the database schema ")
+		fmt.Println(" - 未知数据库名 ")
 		return
 	}
 
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cc.User, cc.Password, cc.Host, cc.Port, cc.Schema)
-	db, err := sql.Open(cc.DbType, connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer db.Close()
-
-	table := strings.Join(cc.Tables, ",")
-	s, err := common.GenerateApi(db, table, cc.IgnoreTables, cc.IgnoreColumns, cc.ServiceName)
+	s, err := cc.GenerateApi()
 
 	if nil != err {
 		log.Fatal(err)

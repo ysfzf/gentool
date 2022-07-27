@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/mynameisfzf/gentool/common"
 	"github.com/spf13/cobra"
@@ -30,11 +28,11 @@ func init() {
 
 func generateProto() {
 	if Cfg == "" {
-		fmt.Println("未知配置文件")
+		fmt.Println(" - 未知配置文件")
 		return
 	}
-	var cc ProtoConfig
-	err := loadConfig(Cfg, &cc)
+	var cc common.ProtoConfig
+	err := common.LoadConfig(Cfg, &cc)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,16 +42,7 @@ func generateProto() {
 		return
 	}
 
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cc.User, cc.Password, cc.Host, cc.Port, cc.Schema)
-	db, err := sql.Open(cc.DbType, connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer db.Close()
-
-	table := strings.Join(cc.Tables, ",")
-	s, err := common.GenerateSchema(db, table, cc.IgnoreTables, cc.IgnoreColumns, cc.ServiceName, cc.GoPackageName, cc.PackageName)
+	s, err := cc.GenerateSchema()
 
 	if nil != err {
 		log.Fatal(err)

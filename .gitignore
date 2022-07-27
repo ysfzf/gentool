@@ -26,3 +26,4 @@ query
 *.proto
 dao
 test
+*.api

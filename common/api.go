@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -15,6 +16,7 @@ type TabField struct {
 	Typ     string
 	Name    string
 	Comment string
+	Length  int64
 }
 
 type Tab struct {
@@ -29,19 +31,31 @@ type SchemaApi struct {
 	ServiceName string
 	Tables      []Tab
 	Enums       EnumCollection
+	pconf       *ProtoConfig
 }
 
-func GenerateApi(db *sql.DB, table string, ignoreTables, ignoreColumns []string, serviceName string) (*SchemaApi, error) {
-	s := &SchemaApi{}
-	except = append(ignoreColumns, "id")
+func (conf ProtoConfig) GenerateApi() (*SchemaApi, error) {
+
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Schema)
+	db, err := sql.Open(conf.DbType, connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	s := &SchemaApi{
+		pconf: &conf,
+	}
+
 	dbs, err := dbSchema(db)
 	if nil != err {
 		return nil, err
 	}
 
 	s.Syntax = "v1"
-	s.ServiceName = serviceName
-
+	s.ServiceName = conf.ServiceName
+	table := strings.Join(conf.Tables, ",")
 	cols, err := dbColumns(db, dbs, table)
 	if nil != err {
 		return nil, err
@@ -49,7 +63,7 @@ func GenerateApi(db *sql.DB, table string, ignoreTables, ignoreColumns []string,
 
 	typMap := map[string]*Tab{}
 	ignoreMap := map[string]bool{}
-	for _, ig := range ignoreTables {
+	for _, ig := range conf.IgnoreTables {
 		ignoreMap[ig] = true
 	}
 
@@ -89,7 +103,6 @@ func parseApiColumn(s *SchemaApi, msg *Tab, col Column) error {
 	case "char", "varchar", "text", "longtext", "mediumtext", "tinytext":
 		fieldType = "string"
 	case "enum", "set":
-		// Parse c.ColumnType to get the enum list
 		enumList := regexp.MustCompile(`[enum|set]\((.+?)\)`).FindStringSubmatch(col.ColumnType)
 		enums := strings.FieldsFunc(enumList[1], func(c rune) bool {
 			cs := string(c)
@@ -126,6 +139,7 @@ func parseApiColumn(s *SchemaApi, msg *Tab, col Column) error {
 		Typ:     fieldType,
 		Name:    col.ColumnName,
 		Comment: col.ColumnComment,
+		Length:  col.CharacterMaximumLength.Int64,
 	}
 
 	msg.Fields = append(msg.Fields, field)
@@ -156,14 +170,14 @@ func (s *SchemaApi) String() string {
 	for _, tab := range s.Tables {
 		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
 		buf.WriteString("\n")
-		tab.genDefault(buf)
+		tab.genDefault(buf, s)
 		buf.WriteString("\n")
-		tab.genGetAll(buf)
+		tab.genGetAll(buf, s)
 		tab.genGetInfo(buf)
 		buf.WriteString("\n")
-		tab.genAdd(buf)
+		tab.genAdd(buf, s)
 		buf.WriteString("\n")
-		tab.genUpdate(buf)
+		tab.genUpdate(buf, s)
 		buf.WriteString("\n")
 
 	}
@@ -206,9 +220,12 @@ func (s *SchemaApi) String() string {
 	return buf.String()
 }
 
-func (tab Tab) genDefault(buf *bytes.Buffer) {
+func (tab Tab) genDefault(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("   " + tab.Name + " {\n")
 	for _, field := range tab.Fields {
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) {
+			continue
+		}
 		name := From(field.Name).ToCamel()
 		comment := ""
 		tag := fmt.Sprintf("`gorm:\"column:%s\" json:\"%s\"`", field.Name, field.Name)
@@ -221,18 +238,21 @@ func (tab Tab) genDefault(buf *bytes.Buffer) {
 	buf.WriteString("   }\n\n")
 }
 
-func (tab Tab) genGetAll(buf *bytes.Buffer) {
+func (tab Tab) genGetAll(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("   Get" + tab.Name + "Request {\n")
 	for _, field := range tab.Fields {
-		if !isInSlice(except, field.Name) {
-			name := From(field.Name).ToCamel()
-			comment := ""
-			tag := fmt.Sprintf("`form:\"%s,optional\"`", field.Name)
-			if field.Comment != "" {
-				comment = "// " + field.Comment
-			}
-			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
+
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) {
+			continue
 		}
+
+		name := From(field.Name).ToCamel()
+		comment := ""
+		tag := fmt.Sprintf("`form:\"%s,optional\"`", field.Name)
+		if field.Comment != "" {
+			comment = "// " + field.Comment
+		}
+		buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
 
 	}
 	buf.WriteString("      Page  uint `form:\"page,optional,default=1\"`\n")
@@ -254,22 +274,29 @@ func (tab Tab) genGetInfo(buf *bytes.Buffer) {
 	buf.WriteString("   }\n\n")
 }
 
-func (tab Tab) genAdd(buf *bytes.Buffer) {
+func (tab Tab) genAdd(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("   Add" + tab.Name + "Request {\n")
 	for _, field := range tab.Fields {
-		if !isInSlice(except, field.Name) {
-			name := From(field.Name).ToCamel()
-			comment := ""
-			validate := ""
-			if field.Typ == "string" {
-				validate = " validate:\"min=2,max:255\""
-			}
-			tag := fmt.Sprintf("`form:\"%s\" json:\"%s\"%s`", field.Name, field.Name, validate)
-			if field.Comment != "" {
-				comment = "// " + field.Comment
-			}
-			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
+
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
+			continue
 		}
+
+		name := From(field.Name).ToCamel()
+		comment := ""
+		validate := ""
+		if field.Typ == "string" {
+			if field.Length > 0 {
+				validate = fmt.Sprintf(" validate:\"min=2,max=%v\"", field.Length)
+			} else {
+				validate = " validate:\"min=2\""
+			}
+		}
+		tag := fmt.Sprintf("`form:\"%s\" json:\"%s\"%s`", field.Name, field.Name, validate)
+		if field.Comment != "" {
+			comment = "// " + field.Comment
+		}
+		buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
 
 	}
 
@@ -277,24 +304,31 @@ func (tab Tab) genAdd(buf *bytes.Buffer) {
 
 }
 
-func (tab Tab) genUpdate(buf *bytes.Buffer) {
+func (tab Tab) genUpdate(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("   Update" + tab.Name + "Request {\n")
 	buf.WriteString("      ID uint  `path:\"id\"`\n")
 
 	for _, field := range tab.Fields {
-		if !isInSlice(except, field.Name) {
-			name := From(field.Name).ToCamel()
-			comment := ""
-			validate := ""
-			if field.Typ == "string" {
-				validate = " validate:\"min=2,max:255\""
-			}
-			tag := fmt.Sprintf("`form:\"%s,optional\" json:\"%s\"%s`", field.Name, field.Name, validate)
-			if field.Comment != "" {
-				comment = "// " + field.Comment
-			}
-			buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
+		//fmt.Println(s.pconf.ignoreColumns, field.Name)
+		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
+			continue
 		}
+
+		name := From(field.Name).ToCamel()
+		comment := ""
+		validate := ""
+		if field.Typ == "string" {
+			if field.Length > 0 {
+				validate = fmt.Sprintf(" validate:\"min=2,max=%v\"", field.Length)
+			} else {
+				validate = " validate:\"min=2\""
+			}
+		}
+		tag := fmt.Sprintf("`form:\"%s,optional\" json:\"%s\"%s`", field.Name, field.Name, validate)
+		if field.Comment != "" {
+			comment = "// " + field.Comment
+		}
+		buf.WriteString(fmt.Sprintf("      %s  %s %s  %s \n", name, field.Typ, tag, comment))
 
 	}
 

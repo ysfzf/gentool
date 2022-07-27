@@ -23,14 +23,13 @@ tables:
 serviceName: user
 packageName: user
 goPackageName: ./user
-ignoreTables:  
-  - user_logs
 ignoreColumns: 
+  - deleted_at 
+  - version
+onlySearch:
   - id
   - created_at
   - updated_at
-  - deleted_at
-  - version
 
 ```
 

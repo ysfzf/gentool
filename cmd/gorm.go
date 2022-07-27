@@ -22,9 +22,9 @@ var gormCmd = &cobra.Command{
 	gentool gorm --config xx.yaml
  `,
 	Run: func(cmd *cobra.Command, args []string) {
-		var cc GenConfig
+		var cc common.GenConfig
 
-		err := loadConfig(Cfg, &cc)
+		err := common.LoadConfig(Cfg, &cc)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -43,7 +43,7 @@ func init() {
 	rootCmd.AddCommand(gormCmd)
 }
 
-func generateGorm(db *sql.DB, c *GenConfig) {
+func generateGorm(db *sql.DB, c *common.GenConfig) {
 	g := gen.NewGenerator(gen.Config{
 		OutPath:           c.OutPath,
 		OutFile:           c.OutFile,

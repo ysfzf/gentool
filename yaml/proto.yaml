@@ -13,9 +13,10 @@ goPackageName: ./merchant
 outFile: merchant.proto
 ignoreTables:  
 ignoreColumns: 
+  - deleted_at 
+  - version
+onlySearch:
   - id
   - created_at
   - updated_at
-  - deleted_at
-  - version
 
