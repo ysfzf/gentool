@@ -10,6 +10,9 @@ tables:
   - merchant_users
 serviceName: merchant
 outFile: merchant.api
+jwt: false
+middleware:
+  - CheckRole
 ignoreColumns: 
   - deleted_at 
   - version

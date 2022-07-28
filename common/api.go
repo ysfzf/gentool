@@ -190,12 +190,21 @@ func (s *SchemaApi) String() string {
 @server(
 	prefix: v1/%s
 	group: %s
-	jwt: Auth
+	%s
+	%s
 )`
+	jwt := ""
+	if s.pconf.Jwt {
+		jwt = "jwt:Auth"
+	}
+	middleware := ""
+	if len(s.pconf.Middleware) > 0 {
+		middleware = "middleware:" + strings.Join(s.pconf.Middleware, ",")
+	}
 
 	for _, tab := range s.Tables {
 		buf.WriteString("//--------------------------------" + tab.Comment + "--------------------------------")
-		buf.WriteString(fmt.Sprintf(temp, s.ServiceName, tab.TableName))
+		buf.WriteString(fmt.Sprintf(temp, s.ServiceName, tab.TableName, jwt, middleware))
 		buf.WriteString("\n")
 		buf.WriteString("service " + s.ServiceName + "-api{")
 		buf.WriteString("\n")

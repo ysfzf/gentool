@@ -19,7 +19,8 @@ type ProtoConfig struct {
 	GoPackageName string   `yaml:"goPackageName"`
 	OutFile       string   `yaml:"outFile"`
 	IgnoreTables  []string `yaml:"ignoreTables"`
-
+	Jwt           bool     `yaml:"jwt"`
+	Middleware    []string `yaml:"middleware"`    //中间件
 	OnlySearch    []string `yaml:"onlySearch"`    //查询时出现，但增改时不会出现的字段，如id,created_at,updated_at
 	IgnoreColumns []string `yaml:"ignoreColumns"` //都不会出现的字段,如deleted_at,version
 
