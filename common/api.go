@@ -301,7 +301,7 @@ func (tab Tab) genAdd(buf *bytes.Buffer, s *SchemaApi) {
 				validate = " validate:\"min=2\""
 			}
 		}
-		tag := fmt.Sprintf("`form:\"%s\" json:\"%s\"%s`", field.Name, field.Name, validate)
+		tag := fmt.Sprintf("`form:\"%s\" %s`", field.Name, validate)
 		if field.Comment != "" {
 			comment = "// " + field.Comment
 		}
@@ -333,7 +333,7 @@ func (tab Tab) genUpdate(buf *bytes.Buffer, s *SchemaApi) {
 				validate = " validate:\"min=2\""
 			}
 		}
-		tag := fmt.Sprintf("`form:\"%s,optional\" json:\"%s\"%s`", field.Name, field.Name, validate)
+		tag := fmt.Sprintf("`form:\"%s,optional\" %s`", field.Name, validate)
 		if field.Comment != "" {
 			comment = "// " + field.Comment
 		}

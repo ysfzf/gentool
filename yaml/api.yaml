@@ -16,6 +16,7 @@ middleware:
 ignoreColumns: 
   - deleted_at 
   - version
+  - mid
 onlySearch:
   - id
   - created_at
