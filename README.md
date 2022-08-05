@@ -5,7 +5,10 @@ Generates a protobuf file from your mysql database,May also generates gorm files
 ### protobuf
  
  ```
- gentool proto --config config.yaml  
+ gentool proto --config proto.yaml  
+
+ #go-zero api file
+ gentool api --config api.yaml
 
  ```
 
