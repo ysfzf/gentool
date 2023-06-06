@@ -14,7 +14,7 @@ var Cfg string
 
 var rootCmd = &cobra.Command{
 	Use:   "gentool",
-	Short: "gentool v1.0.3 , Generate a proto file or gorm model file",
+	Short: "gentool v1.0.5 , Generate a proto file or gorm model file",
 	Long:  ``,
 }
 

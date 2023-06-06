@@ -13,10 +13,11 @@ import (
 )
 
 type TabField struct {
-	Typ     string
-	Name    string
-	Comment string
-	Length  int64
+	Typ          string
+	Name         string
+	Comment      string
+	Length       int64
+	DefaultValue string
 }
 
 type Tab struct {
@@ -136,10 +137,11 @@ func parseApiColumn(s *SchemaApi, msg *Tab, col Column) error {
 	}
 
 	field := TabField{
-		Typ:     fieldType,
-		Name:    col.ColumnName,
-		Comment: col.ColumnComment,
-		Length:  col.CharacterMaximumLength.Int64,
+		Typ:          fieldType,
+		Name:         col.ColumnName,
+		Comment:      col.ColumnComment,
+		Length:       col.CharacterMaximumLength.Int64,
+		DefaultValue: col.DefaultValue.String,
 	}
 
 	msg.Fields = append(msg.Fields, field)
@@ -165,7 +167,7 @@ func (s *SchemaApi) String() string {
 
 	buf.WriteString("type (\n")
 	buf.WriteString("   IDRequest {\n")
-	buf.WriteString("      ID uint  `path:\"id\"`\n")
+	buf.WriteString("      ID int64  `path:\"id\"`\n")
 	buf.WriteString("   }\n\n")
 	for _, tab := range s.Tables {
 		buf.WriteString("   //--------------------------------" + tab.Comment + "--------------------------------")
@@ -301,7 +303,11 @@ func (tab Tab) genAdd(buf *bytes.Buffer, s *SchemaApi) {
 				validate = " validate:\"min=2\""
 			}
 		}
-		tag := fmt.Sprintf("`form:\"%s\"%s`", field.Name, validate)
+		fm := field.Name
+		if len(field.DefaultValue) > 0 {
+			fm = fm + ",default=" + field.DefaultValue
+		}
+		tag := fmt.Sprintf("`form:\"%s\"%s`", fm, validate)
 		if field.Comment != "" {
 			comment = "// " + field.Comment
 		}
@@ -315,10 +321,9 @@ func (tab Tab) genAdd(buf *bytes.Buffer, s *SchemaApi) {
 
 func (tab Tab) genUpdate(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("   Update" + tab.Name + "Request {\n")
-	buf.WriteString("      ID uint  `path:\"id\"`\n")
+	buf.WriteString("      ID int64  `path:\"id\"`\n")
 
 	for _, field := range tab.Fields {
-		//fmt.Println(s.pconf.ignoreColumns, field.Name)
 		if isInSlice(s.pconf.IgnoreColumns, field.Name) || isInSlice(s.pconf.OnlySearch, field.Name) {
 			continue
 		}
@@ -333,7 +338,11 @@ func (tab Tab) genUpdate(buf *bytes.Buffer, s *SchemaApi) {
 				validate = " validate:\"min=2\""
 			}
 		}
-		tag := fmt.Sprintf("`form:\"%s,optional\"%s`", field.Name, validate)
+		fm := field.Name
+		if len(field.DefaultValue) > 0 {
+			fm = fm + ",default=" + field.DefaultValue
+		}
+		tag := fmt.Sprintf("`form:\"%s\"%s`", fm, validate)
 		if field.Comment != "" {
 			comment = "// " + field.Comment
 		}

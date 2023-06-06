@@ -3,11 +3,11 @@ host: localhost
 port: 3306
 user: root
 password: 123456
-schema: fcar
+schema: zsb
 tables: 
   - name: shops
-  - name: users
-  - name: shop_goods
+  - name: shop_foods
+  - name: goods
     as: ShopGoods
     relates:
     - table: shops

@@ -64,11 +64,22 @@ func generateGorm(db *sql.DB, c *common.GenConfig) {
 	}
 	g.UseDB(gdb)
 
+	dataMap := map[string]func(detailType string) (dataType string){
+		"int": func(detailType string) (dataType string) { return "int64" },
+		"tinyint": func(detailType string) (dataType string) {
+			return "int8"
+		},
+	}
+
+	g.WithDataTypeMap(dataMap)
 	models := make([]interface{}, len(c.Tables))
 
 	for index, tab := range c.Tables {
 
-		opts := []gen.FieldOpt{}
+		opts := []gen.FieldOpt{
+			gen.FieldType("id", "int64"),
+			gen.FieldType("deleted_at", "gorm.DeletedAt"),
+		}
 		for _, relate := range tab.Relates {
 
 			if relate.Column == "" {

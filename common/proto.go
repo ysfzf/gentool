@@ -115,7 +115,7 @@ func dbColumns(db *sql.DB, schema, table string) ([]Column, error) {
 
 	tableArr := strings.Split(table, ",")
 
-	q := "SELECT c.TABLE_NAME, c.COLUMN_NAME, c.IS_NULLABLE, c.DATA_TYPE, " +
+	q := "SELECT c.TABLE_NAME, c.COLUMN_NAME, c.IS_NULLABLE, c.DATA_TYPE,c.COLUMN_DEFAULT," +
 		"c.CHARACTER_MAXIMUM_LENGTH, c.NUMERIC_PRECISION, c.NUMERIC_SCALE, c.COLUMN_TYPE ,c.COLUMN_COMMENT,t.TABLE_COMMENT " +
 		"FROM INFORMATION_SCHEMA.COLUMNS as c  LEFT JOIN  INFORMATION_SCHEMA.TABLES as t  on c.TABLE_NAME = t.TABLE_NAME and  c.TABLE_SCHEMA = t.TABLE_SCHEMA" +
 		" WHERE c.TABLE_SCHEMA = ?"
@@ -134,7 +134,7 @@ func dbColumns(db *sql.DB, schema, table string) ([]Column, error) {
 
 	for rows.Next() {
 		cs := Column{}
-		err := rows.Scan(&cs.TableName, &cs.ColumnName, &cs.IsNullable, &cs.DataType,
+		err := rows.Scan(&cs.TableName, &cs.ColumnName, &cs.IsNullable, &cs.DataType, &cs.DefaultValue,
 			&cs.CharacterMaximumLength, &cs.NumericPrecision, &cs.NumericScale, &cs.ColumnType, &cs.ColumnComment, &cs.TableComment)
 		if err != nil {
 			log.Fatal(err)
@@ -362,7 +362,7 @@ type Message struct {
 	Fields  []MessageField
 }
 
-//gen default message
+// gen default message
 func (m Message) GenDefaultMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -389,7 +389,7 @@ func (m Message) GenDefaultMessage(buf *bytes.Buffer, s *Schema) {
 	m.Fields = mOrginFields
 }
 
-//gen add req message
+// gen add req message
 func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -431,7 +431,7 @@ func (m Message) GenRpcAddReqRespMessage(buf *bytes.Buffer, s *Schema) {
 
 }
 
-//gen add resp message
+// gen add resp message
 func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -471,7 +471,7 @@ func (m Message) GenRpcUpdateReqMessage(buf *bytes.Buffer, s *Schema) {
 	m.Fields = mOrginFields
 }
 
-//gen add resp message
+// gen add resp message
 func (m Message) GenRpcDelReqMessage(buf *bytes.Buffer) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -496,7 +496,7 @@ func (m Message) GenRpcDelReqMessage(buf *bytes.Buffer) {
 	m.Fields = mOrginFields
 }
 
-//gen add resp message
+// gen add resp message
 func (m Message) GenRpcGetByIdReqMessage(buf *bytes.Buffer) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -524,7 +524,7 @@ func (m Message) GenRpcGetByIdReqMessage(buf *bytes.Buffer) {
 	m.Fields = mOrginFields
 }
 
-//gen add resp message
+// gen add resp message
 func (m Message) GenRpcSearchReqMessage(buf *bytes.Buffer, s *Schema) {
 	mOrginName := m.Name
 	mOrginFields := m.Fields
@@ -623,6 +623,7 @@ type Column struct {
 	ColumnName             string
 	IsNullable             string
 	DataType               string
+	DefaultValue           sql.NullString
 	CharacterMaximumLength sql.NullInt64
 	NumericPrecision       sql.NullInt64
 	NumericScale           sql.NullInt64
