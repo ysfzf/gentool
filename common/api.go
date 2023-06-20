@@ -270,7 +270,7 @@ func (tab Tab) genGetAll(buf *bytes.Buffer, s *SchemaApi) {
 	buf.WriteString("      Limit uint `form:\"limit,optional,default=10\"`\n")
 	buf.WriteString("   }\n\n")
 	buf.WriteString("   Get" + tab.Name + "Response {\n")
-	buf.WriteString(fmt.Sprintf("      Items   []%s `json:\"itmes\"`\n", tab.Name))
+	buf.WriteString(fmt.Sprintf("      Items   []%s `json:\"items\"`\n", tab.Name))
 	buf.WriteString("      Current uint `json:\"current_page\"`\n")
 	buf.WriteString("      Last  uint  `json:\"last_page\"`\n")
 	buf.WriteString("      Total uint  `json:\"total\"`\n")
