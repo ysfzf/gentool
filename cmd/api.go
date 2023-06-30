@@ -10,8 +10,8 @@ import (
 
 var apiCmd = &cobra.Command{
 	Use:   "api",
-	Short: "通过数据表创建一个api文件",
-	Long: `这个命令可以根据数据表结构创建一个go-zero项目的api文件,栗子:
+	Short: "Generate go-zero api file from database",
+	Long: `For example:
 
 	gentool api --config xxx.yaml
  `,

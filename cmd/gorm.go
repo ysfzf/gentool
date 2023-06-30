@@ -16,7 +16,7 @@ import (
 
 var gormCmd = &cobra.Command{
 	Use:   "gorm",
-	Short: "Generate gorm model file from database",
+	Short: "Generate gorm related file from database",
 	Long: `This command generates a Gorm related file, which supports MySQL or Postgres or SQLite or sqlserver. For example:
 
 	gentool gorm --config xx.yaml
