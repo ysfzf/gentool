@@ -18,8 +18,8 @@ outPath: ./dao/query
 outFile:
 withUnitTest: false
 modelPkgName: model
-fieldNullable: true
+fieldNullable: false
 fieldWithIndexTag: false
-fieldWithTypeTag: true
-fieldCoverable: true
+fieldWithTypeTag: false
+fieldCoverable: false
  

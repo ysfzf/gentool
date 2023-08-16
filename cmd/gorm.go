@@ -65,10 +65,10 @@ func generateGorm(db *sql.DB, c *common.GenConfig) {
 	g.UseDB(gdb)
 
 	dataMap := map[string]func(detailType string) (dataType string){
-		"int": func(detailType string) (dataType string) { return "int64" },
-		"tinyint": func(detailType string) (dataType string) {
-			return "int8"
-		},
+		"int":     func(detailType string) (dataType string) { return "int64" },
+		"tinyint": func(detailType string) (dataType string) { return "int8" },
+		"date":    func(detailType string) (dataType string) { return "string" },
+		"time":    func(detailType string) (dataType string) { return "string" },
 	}
 
 	g.WithDataTypeMap(dataMap)
